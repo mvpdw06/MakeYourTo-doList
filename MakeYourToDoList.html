@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Make your To do List by AngularJs.</title>
+    <script type="text/javascript" src="https://code.angularjs.org/1.0.1/angular-1.0.1.min.js"></script>
+    <script type="text/javascript" src="https://code.angularjs.org/1.0.1/angular-cookies-1.0.1.min.js"></script>
+    <script type="text/javascript">
+        var app = angular.module('MyApp', ['ngCookies']);
+        app.controller('MyController', function ($scope, $window, $cookieStore) {
+            $scope.newItem = '';
+            if (typeof ($cookieStore.get('TodoList')) != 'undefined')
+                $scope.todoList = $cookieStore.get('TodoList');
+            else
+                $scope.todoList = [];
+            $scope.addItem = function () {
+                if (this.newItem) {
+                    this.todoList.push({ label: this.newItem, isFinish: false, isRegret: false });
+                    $cookieStore.put("TodoList", $scope.todoList);
+                    this.newItem = '';
+                }
+            }
+            $scope.removeItem = function (item) {
+                item.isFinish = true;
+                $cookieStore.put("TodoList", $scope.todoList);
+            }
+            $scope.regret = function (item) {
+                item.isFinish = false;
+                item.isRegret = true;
+                $cookieStore.put("TodoList", $scope.todoList);
+            }
+            $scope.edit = function (item) {
+                item.editing = true;
+                $cookieStore.put("TodoList", $scope.todoList);
+            }
+            $scope.save = function (item) {
+                delete item.editing;
+                $cookieStore.put("TodoList", $scope.todoList);
+            }
+            $scope.RemoveCookie = function () {
+                $cookieStore.remove('TodoList');
+                alert('清除Cookie');
+            }
+        });
+    </script>
+</head>
+<body ng-controller="TodoCrtlRemovable">
+    <h1>Todo List</h1>
+    <div ng-app="MyApp" ng-controller="MyController">
+        <form ng-submit="addItem()">
+            <input type="text" ng-model="newItem" name="newItem" />
+            <input type="submit" id="submit" value="add" />
+            <input type="button" value="Remove Cookie" ng-click="RemoveCookie()" />
+        </form>
+
+        <ul id="todo">
+            <li ng-repeat="item in todoList | filter:{isFinish:false}">
+                <div ng-hide="item.editing">
+                    <input type="checkbox" ng-click="removeItem(item)"><span ng-dblclick="edit(item)">{{ item.label }}</span>
+                </div>
+                <div ng-show="item.editing">
+                    <input type="text" value="{{item.label }}" ng-model="item.label">
+                    <button ng-click="save(item)">儲存</button>
+                </div>
+            </li>
+        </ul>
+
+        <hr>
+
+        <h1>Finished!</h1>
+        <ul id="finish">
+            <li ng-repeat="item in todoList | filter:{isFinish:true}">
+                <input type="checkbox" ng-click="regret(item)">
+                {{ item.label }}
+            </li>
+        </ul>
+
+        <hr />
+
+    </div>
+    <h2>Version History</h2>
+    v1. Sources Create<br />
+    v2. 增加反悔功能<br />
+    v3. 增加修改List功能<br />
+    v4. 增加Cookie記錄功能(Google Chrome會忽略local file cookie, 解決方法請參考：<a href="http://wolfslittlestore.be/2012/08/cookies-on-local-files-in-chrome/" >點此</a> )
+      <hr />
+    <h3>by Ryan Hsu.</h3>
+</body>
+</html>
